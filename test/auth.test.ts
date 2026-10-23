@@ -10,7 +10,7 @@ let saved: Record<string, string | undefined>;
 beforeEach(() => {
   saved = { ...process.env };
   for (const key of Object.keys(process.env)) if (key.startsWith("DISCORD_")) delete process.env[key];
-  home = mkdtempSync(join(tmpdir(), "pi-discord-test-"));
+  home = mkdtempSync(join(tmpdir(), "pi-cord-test-"));
   process.env.HOME = home;
   process.env.USERPROFILE = home;
 });
@@ -36,6 +36,19 @@ test("selects multiple bots by default, name, alias and ID; config overrides env
   assert.equal(resolveBot("other", config, env).token, "other-token");
   assert.equal(resolveBot(undefined, null, env).token, "primary-token");
   assert.equal(resolveBot(undefined, { bots: { first: "first-token" } }, {}).name, "first");
+  assert.equal(resolveBot(undefined, { bots: { primary: "config-primary" } }, env).token, "config-primary");
+  assert.equal(resolveBot(undefined, { bots: { first: "config-first" } }, { DISCORD_BOT_TOKEN_OTHER: "env-first" }).token, "env-first");
+  assert.equal(resolveBot("default", { bots: { default: "config-default" } }, env).token, "config-default");
+});
+test("ambiguous bot aliases, display names and IDs fail instead of choosing another account", () => {
+  for (const field of ["aliases", "name", "id"]) {
+    const selector = field === "id" ? id : "shared";
+    const entry = field === "aliases" ? { aliases: [selector] } : { [field]: selector };
+    const config = { default: selector, bots: { first: { token: "first-token", ...entry }, second: { token: "second-token", ...entry } } };
+    for (const query of [selector, undefined]) assert.throws(() => resolveBot(query, config, {}), /Ambiguous Discord bot selector/);
+    assert.equal(resolveBot("first", config, {}).token, "first-token");
+    assert.equal(resolveBot("second", config, {}).token, "second-token");
+  }
 });
 test("does not silently fall back for a missing configured default", () => {
   assert.throws(() => resolveBot(undefined, { default: "missing", bots: { work: "fake-token" } }, { DISCORD_BOT_TOKEN: "other-token" }), /default.*does not exist/);

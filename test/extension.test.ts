@@ -13,7 +13,7 @@ let requests: Array<{ url: string; options?: RequestInit }>;
 beforeEach(() => {
   saved = { ...process.env };
   for (const key of Object.keys(process.env)) if (key.startsWith("DISCORD_")) delete process.env[key];
-  home = mkdtempSync(join(tmpdir(), "pi-discord-extension-"));
+  home = mkdtempSync(join(tmpdir(), "pi-cord-extension-"));
   process.env.HOME = home;
   process.env.USERPROFILE = home;
   process.env.DISCORD_BOT_TOKEN = "fake-bot-token";
@@ -83,6 +83,27 @@ test("approval sends prepared body once, with mention protection and correct acc
   assert.deepEqual(body.allowed_mentions, { parse: [], replied_user: false });
   assert.equal(body.content, "Hello @everyone");
   assert.equal((requests[0].options?.headers as Record<string, string>).Authorization, "fake-user-token");
+});
+test("webhook message writes suppress mentions, preserve explicit choices and leave metadata alone", async () => {
+  for (const operation of [
+    { method: "POST", path: "/webhooks/123/fake-webhook-token?wait=true" },
+    { method: "PATCH", path: "/webhooks/123/fake-webhook-token/messages/@original" },
+    { method: "PATCH", path: "/webhooks/123/fake-webhook-token/messages/456?thread_id=789" },
+    { method: "POST", path: "/webhooks/123/fake-webhook-token", explicit: true },
+    { method: "PATCH", path: "/webhooks/123/fake-webhook-token", metadata: true },
+  ]) {
+    const { execute, confirmations } = setup();
+    const mentions = { parse: ["users"] };
+    const body = operation.metadata ? { name: "renamed" } : { content: "Hello @everyone", ...(operation.explicit ? { allowed_mentions: mentions } : {}) };
+    await execute({ method: operation.method, path: operation.path, body });
+    const sent = JSON.parse(String(requests.at(-1)?.options?.body));
+    if (operation.metadata) assert.deepEqual(sent, body);
+    else {
+      assert.deepEqual(sent.allowed_mentions, operation.explicit ? mentions : { parse: [], replied_user: false });
+      assert.match(confirmations[0], /allowed_mentions/);
+    }
+    assert.equal("allowed_mentions" in body, !!operation.explicit);
+  }
 });
 test("explicit mentions survive approval and full request cannot change during confirmation", async () => {
   const { execute, context } = setup();

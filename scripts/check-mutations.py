@@ -22,9 +22,11 @@ MUTATIONS = [
     ("credential redaction", "src/client.ts", 'text.split(token).join("[redacted]")', 'text', "redacts exact credential"),
     ("user authentication compatibility", "src/auth.ts", 'Authorization: userToken', 'Authorization: `Bot ${userToken}`', "user access is explicit"),
     ("default-account safety", "src/auth.ts", 'if (!found) throw new Error("Configured default Discord bot does not exist; no fallback account was selected.");', 'if (!found) return bots.get("primary")!;', "does not silently fall back"),
+    ("ambiguous-account safety", "src/auth.ts", 'if (matches.length > 1) throw new Error', 'if (false) throw new Error', "ambiguous bot aliases"),
+    ("webhook mention protection", "src/index.ts", 'if (body && messageWrite) {', 'if (body && messageWrite && pathname.includes("/channels/")) {', "webhook message writes"),
 ]
 
-with tempfile.TemporaryDirectory(prefix="pi-discord-mutations-") as temp:
+with tempfile.TemporaryDirectory(prefix="pi-cord-mutations-") as temp:
     checkout = Path(temp)
     for directory in ("src", "test"):
         shutil.copytree(ROOT / directory, checkout / directory)

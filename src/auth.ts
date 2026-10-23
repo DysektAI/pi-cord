@@ -85,7 +85,11 @@ export function resolveBot(botName?: string, config: DiscordConfig | null = load
   if (!bots.size) throw new Error("No Discord bots configured. Set DISCORD_BOT_TOKEN or configure ~/.pi/agent/discord.json.");
   const find = (query: string) => {
     const search = query.trim().toLowerCase();
-    return bots.get(search) ?? [...bots.values()].find((bot) => bot.id === search || bot.name.toLowerCase() === search || bot.aliases.includes(search));
+    const direct = bots.get(search);
+    if (direct) return direct;
+    const matches = [...bots.values()].filter((bot) => bot.id === search || bot.name.toLowerCase() === search || bot.aliases.includes(search));
+    if (matches.length > 1) throw new Error("Ambiguous Discord bot selector; use a unique configured key instead of a shared name, alias, or ID.");
+    return matches[0];
   };
   if (botName !== undefined) {
     const found = find(botName);

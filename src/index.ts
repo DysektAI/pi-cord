@@ -41,8 +41,12 @@ export default function discordExtension(pi: ExtensionAPI) {
       const { headers, bot } = resolveAuth(account, params.bot);
       const token = bot?.token ?? headers.Authorization;
       const body = params.body ? JSON.parse(JSON.stringify(params.body)) as Record<string, unknown> : undefined;
-      // Message sends/edits do not mention everyone or roles unless explicitly requested and approved.
-      if (body && /\/channels\/\d+\/messages(?:\/\d+)?$/.test(new URL(requestUrl(path)).pathname) && (method === "POST" || method === "PATCH")) {
+      // Native channel/webhook message sends and edits suppress accidental mentions.
+      const pathname = new URL(requestUrl(path)).pathname;
+      const messageWrite = method === "POST"
+        ? /^\/api\/v10\/(?:channels\/\d+\/messages|webhooks\/\d+\/[^/]+)$/.test(pathname)
+        : method === "PATCH" && /^\/api\/v10\/(?:channels\/\d+\/messages\/\d+|webhooks\/\d+\/[^/]+\/messages\/(?:@original|\d+))$/.test(pathname);
+      if (body && messageWrite) {
         body.allowed_mentions ??= { parse: [], replied_user: false };
       }
       const serialized = body ? JSON.stringify(body) : "";

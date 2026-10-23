@@ -1,4 +1,4 @@
-# pi-discord
+# pi-cord
 
 Lightweight Discord REST access from [Pi](https://pi.dev). Ask for a channel recap,
 inspect feedback, draft a reply, then approve sending it. No gateway, daemon,
@@ -13,10 +13,10 @@ The existing `discord` tool name, multi-bot selection, environment variables, an
 Requires Node 22.19+ and Pi. Install the Git package:
 
 ```sh
-pi install git:github.com/DysektAI/pi-discord
+pi install git:github.com/DysektAI/pi-cord
 ```
 
-During development, use `pi -ne -e /absolute/path/to/pi-discord` to load only this
+During development, use `pi -ne -e /absolute/path/to/pi-cord` to load only this
 package for one invocation. Local packages need their development dependencies
 installed. Do not load both this package and the old `extensions/discord.ts`.
 See [migration](#migration).
@@ -57,8 +57,11 @@ For multiple bots, optionally configure `~/.pi/agent/discord.json`:
 Restrict credential-file permissions to your OS account (for example `chmod 600`
 on POSIX systems). Malformed/unreadable configuration fails rather than silently
 switching accounts. Config entries override environment bots with matching names.
-Selection supports a configured name, alias, or bot ID. Without `bot`, the configured
-`default` wins, then `DISCORD_BOT_TOKEN`, then the first configured bot.
+Selection supports a configured key, display name, alias, or bot ID. An exact key
+wins over aliases; ambiguous display names, aliases, or IDs fail instead of choosing
+an account. Without `bot`, the configured `default` wins, then the merged `primary`
+entry (`bots.primary` overrides `DISCORD_BOT_TOKEN`), then the first merged bot,
+which may come from `DISCORD_BOT_TOKEN_*`.
 
 ## Tool
 
@@ -88,10 +91,13 @@ Without a confirmation-capable UI, writes fail closed; reads still work in
 print/JSON/headless mode. An RPC client must support Pi's confirmation protocol.
 Approval is for one request only, never an entire session or future batch.
 
-Message sends/edits default to `allowed_mentions: {"parse":[],"replied_user":false}`
-unless explicitly supplied and approved, so drafting a reply does not accidentally
-ping everyone, roles, or the replied-to user. Bodies are limited to 16,000 bytes
-so the confirmation can show the full operation.
+Native channel-message sends/edits and webhook execution/message edits default to
+`allowed_mentions: {"parse":[],"replied_user":false}` unless explicitly supplied and
+approved, preventing accidental pings to everyone, roles, or the replied-to user.
+Other message-producing routes (such as interaction callbacks and forum creation)
+and Slack/GitHub-compatible webhook payloads are not covered by this default;
+review their mention behavior explicitly. Bodies are limited to 16,000 bytes so
+the confirmation can show the full operation.
 
 ### Channel recaps
 
@@ -167,7 +173,7 @@ When keeping an older `pi-extensions` release, exclude its entry:
       "source": "git:github.com/DysektAI/pi-extensions",
       "extensions": ["!extensions/discord.ts"]
     },
-    "git:github.com/DysektAI/pi-discord"
+    "git:github.com/DysektAI/pi-cord"
   ]
 }
 ```
