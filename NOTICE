@@ -1,0 +1,6 @@
+Discord integration extracted from DysektAI/pi-extensions (MIT).
+Original modules: extensions/discord.ts and extensions/_shared/discord-auth.ts.
+Source revision: 2395ed1 (2026-10-23 checkout).
+Copyright (c) 2026 DysektAI.
+
+This project is independent and is not affiliated with or endorsed by Discord.
