@@ -1,0 +1,31 @@
+{
+  "name": "@dysektai/pi-cord",
+  "version": "0.1.0",
+  "description": "Lightweight Discord REST tools for Pi with multi-account selection, write approval, and bounded requests.",
+  "keywords": ["pi-package", "pi", "discord", "rest"],
+  "license": "MIT",
+  "type": "module",
+  "repository": {"type": "git", "url": "git+https://github.com/DysektAI/pi-cord.git"},
+  "bugs": {"url": "https://github.com/DysektAI/pi-cord/issues"},
+  "homepage": "https://github.com/DysektAI/pi-cord#readme",
+  "engines": {"node": ">=22.19.0"},
+  "pi": {"extensions": ["./src/index.ts"]},
+  "files": ["src/", "README.md", "SECURITY.md", "NOTICE", "LICENSE"],
+  "peerDependencies": {"@earendil-works/pi-coding-agent": "*", "typebox": "*"},
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "1.0.0",
+    "@types/node": "22.20.5",
+    "typebox": "1.3.27",
+    "typescript": "6.0.3"
+  },
+  "overrides": {
+    "@earendil-works/pi-coding-agent@1.0.0": { "undici": "8.12.2" }
+  },
+  "scripts": {
+    "test": "node --experimental-strip-types --test test/*.test.ts",
+    "test:mutations": "python3 scripts/check-mutations.py",
+    "typecheck": "tsc --pretty false",
+    "verify": "npm run typecheck && npm test",
+    "test:load": "node --experimental-strip-types scripts/check-load.ts"
+  }
+}
