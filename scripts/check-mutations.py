@@ -24,13 +24,17 @@ MUTATIONS = [
     ("default-account safety", "src/auth.ts", 'if (!found) throw new Error("Configured default Discord bot does not exist; no fallback account was selected.");', 'if (!found) return bots.get("primary")!;', "does not silently fall back"),
     ("ambiguous-account safety", "src/auth.ts", 'if (matches.length > 1) throw new Error', 'if (false) throw new Error', "ambiguous bot aliases"),
     ("webhook mention protection", "src/index.ts", 'if (body && messageWrite) {', 'if (body && messageWrite && pathname.includes("/channels/")) {', "webhook message writes"),
+    ("encoded-route mention protection", "src/index.ts", 'decodeURIComponent(new URL(url).pathname)', 'new URL(url).pathname', "encoded native message paths"),
+    ("encoded URL preservation", "src/index.ts", '{ method, path, body }, operationSignal', '{ method, path: decodeURIComponent(path), body }, operationSignal', "encoded native message paths"),
+    ("SDK security override", "package.json", '"undici": "8.12.2"', '"undici": "8.10.2"', "SDK dependency override keeps"),
 ]
 
 with tempfile.TemporaryDirectory(prefix="pi-cord-mutations-") as temp:
     checkout = Path(temp)
     for directory in ("src", "test"):
         shutil.copytree(ROOT / directory, checkout / directory)
-    shutil.copy2(ROOT / "package.json", checkout / "package.json")
+    for filename in ("package.json", "package-lock.json"):
+        shutil.copy2(ROOT / filename, checkout / filename)
     (checkout / "node_modules").symlink_to(ROOT / "node_modules", target_is_directory=True)
     for label, relative, before, after, pattern in MUTATIONS:
         target = checkout / relative

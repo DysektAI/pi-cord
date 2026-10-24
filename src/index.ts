@@ -35,14 +35,14 @@ export default function discordExtension(pi: ExtensionAPI) {
       const method = params.method as Method;
       const path = params.path;
       if (!["GET", "POST", "PATCH", "PUT", "DELETE"].includes(method)) throw new Error("Unsupported Discord method.");
-      requestUrl(path);
+      const url = requestUrl(path);
       if (method === "GET" && params.body !== undefined) throw new Error("GET requests cannot have a body.");
       const account = params.account ?? "bot";
       const { headers, bot } = resolveAuth(account, params.bot);
       const token = bot?.token ?? headers.Authorization;
       const body = params.body ? JSON.parse(JSON.stringify(params.body)) as Record<string, unknown> : undefined;
       // Native channel/webhook message sends and edits suppress accidental mentions.
-      const pathname = new URL(requestUrl(path)).pathname;
+      const pathname = decodeURIComponent(new URL(url).pathname);
       const messageWrite = method === "POST"
         ? /^\/api\/v10\/(?:channels\/\d+\/messages|webhooks\/\d+\/[^/]+)$/.test(pathname)
         : method === "PATCH" && /^\/api\/v10\/(?:channels\/\d+\/messages\/\d+|webhooks\/\d+\/[^/]+\/messages\/(?:@original|\d+))$/.test(pathname);

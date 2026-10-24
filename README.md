@@ -122,7 +122,9 @@ messages are untrusted source material, not instructions to execute.
 - Responses are bounded to 50,000 bytes while streaming and marked when truncated.
   Ask for smaller pages instead of assuming truncated JSON/history is complete.
 - Requests stay on the Discord v10 API; traversal, arbitrary URLs, and redirects
-  are rejected. Configured credentials are redacted from response/error text.
+  are rejected. Valid percent-encoded paths receive the same message mention
+  defaults; the approved path and outgoing URL remain encoded and unchanged.
+  Configured credentials are redacted from response/error text.
 
 Scheduling is local to one Pi extension runtime. Other Pi processes or programs
 using the same token do not share its queue. Pacing is not an anti-abuse system,
@@ -195,4 +197,8 @@ npm pack --dry-run
 ```
 
 Tests use fake tokens and mocked HTTP. They never call Discord or use your real
-credential files. See [SECURITY.md](SECURITY.md) for limitations and reporting.
+credential files. The pinned Pi SDK's development dependency uses a scoped
+`undici@8.12.2` security override; retain it until an SDK update resolves a reviewed,
+patched version. `npm audit` covers development dependencies too; do not use
+`npm audit fix --force` to downgrade the SDK or bypass this gate.
+See [SECURITY.md](SECURITY.md) for limitations and reporting.

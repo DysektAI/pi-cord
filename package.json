@@ -18,6 +18,9 @@
     "typebox": "1.3.27",
     "typescript": "6.0.3"
   },
+  "overrides": {
+    "@earendil-works/pi-coding-agent@1.0.0": { "undici": "8.12.2" }
+  },
   "scripts": {
     "test": "node --experimental-strip-types --test test/*.test.ts",
     "test:mutations": "python3 scripts/check-mutations.py",

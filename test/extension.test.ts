@@ -105,6 +105,29 @@ test("webhook message writes suppress mentions, preserve explicit choices and le
     assert.equal("allowed_mentions" in body, !!operation.explicit);
   }
 });
+test("encoded native message paths retain mention protection and the original approved URL", async () => {
+  for (const account of ["bot", "user"]) {
+    for (const operation of [
+      { method: "POST", path: "/%63hannels/%31%32%33/%6dessages?thread_id=456" },
+      { method: "PATCH", path: "/channels/%31%32%33/messages/%34%35%36" },
+      { method: "POST", path: "/%77ebhooks/%31%32%33/fake-webhook-token?wait=true" },
+      { method: "PATCH", path: "/webhooks/%31%32%33/fake-webhook-token/messages/%40original" },
+      { method: "PATCH", path: "/webhooks/123/fake-webhook-token/messages/%34%35%36" },
+      { method: "POST", path: "/channels/%31%32%33/messages", explicit: true },
+    ]) {
+      const { execute, confirmations } = setup();
+      const mentions = { parse: ["users"] };
+      const body = { content: "Hello @everyone", ...(operation.explicit ? { allowed_mentions: mentions } : {}) };
+      await execute({ ...operation, body, account });
+      const sent = requests.at(-1)!;
+      assert.equal(sent.url, new URL(`https://discord.com/api/v10${operation.path}`).href);
+      assert.ok(confirmations[0].includes(`${operation.method} ${operation.path}`));
+      assert.match(confirmations[0], /allowed_mentions/);
+      assert.deepEqual(JSON.parse(String(sent.options?.body)).allowed_mentions, operation.explicit ? mentions : { parse: [], replied_user: false });
+      assert.equal("allowed_mentions" in body, !!operation.explicit);
+    }
+  }
+});
 test("explicit mentions survive approval and full request cannot change during confirmation", async () => {
   const { execute, context } = setup();
   const params = { ...write, body: { content: "hi", allowed_mentions: { parse: ["users"] } } };
