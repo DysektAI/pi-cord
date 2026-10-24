@@ -37,6 +37,15 @@ The response limit bounds retained data and stops stream consumption once exceed
 the HTTP implementation can still deliver a chunk larger than the retained limit.
 Truncated responses must not be interpreted as complete structured data.
 
+## Host dependencies
+
+The development Undici override is not a security update for a consuming Pi host.
+Pi supplies the SDK/TypeBox peers, and npm honors overrides only at the installing
+project's root. Audit and patch the actual host dependency tree; keep Node's
+built-in HTTP implementation current independently. See
+[host dependency security](README.md#host-dependency-security) for the SDK 1.0.0
+root-override example and globally installed host limitations.
+
 ## Reporting
 
 Report vulnerabilities privately through the repository's GitHub security reporting

@@ -21,6 +21,33 @@ package for one invocation. Local packages need their development dependencies
 installed. Do not load both this package and the old `extensions/discord.ts`.
 See [migration](#migration).
 
+## Host dependency security
+
+Pi supplies the SDK and TypeBox peer dependencies; this package does not bundle
+or patch them. The repository's Undici override protects only its development
+installation. npm ignores an installed package's overrides when resolving a
+consumer's dependency tree, so installing pi-cord does not patch your Pi host.
+
+Use a reviewed SDK release with a clean full dependency audit. For an npm-managed
+host still using `@earendil-works/pi-coding-agent@1.0.0`, apply this override in the
+**host project's root** `package.json`, then regenerate its lock and reinstall
+through the host's trusted workflow:
+
+```json
+{
+  "overrides": {
+    "@earendil-works/pi-coding-agent@1.0.0": { "undici": "8.12.2" }
+  }
+}
+```
+
+From that host root, check `npm ls @earendil-works/pi-coding-agent undici` and run
+`npm audit` including development dependencies. Other package managers need their
+root-level equivalent. A globally installed Pi must be upgraded or rebuilt with
+the fix; editing pi-cord's manifest or Pi settings does not patch it. This override
+also does not update Node's built-in HTTP implementation; keep Node security
+updates current separately.
+
 ## Supported setup: bot accounts
 
 Create an application and bot in the [Discord Developer Portal](https://discord.com/developers/applications),
@@ -199,6 +226,8 @@ npm pack --dry-run
 Tests use fake tokens and mocked HTTP. They never call Discord or use your real
 credential files. The pinned Pi SDK's development dependency uses a scoped
 `undici@8.12.2` security override; retain it until an SDK update resolves a reviewed,
-patched version. `npm audit` covers development dependencies too; do not use
+patched version. This does not patch a consuming host; see
+[host dependency security](#host-dependency-security). `npm audit` covers
+development dependencies too; do not use
 `npm audit fix --force` to downgrade the SDK or bypass this gate.
 See [SECURITY.md](SECURITY.md) for limitations and reporting.
