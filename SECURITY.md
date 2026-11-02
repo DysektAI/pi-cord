@@ -39,12 +39,14 @@ Truncated responses must not be interpreted as complete structured data.
 
 ## Host dependencies
 
-The development Undici override is not a security update for a consuming Pi host.
-Pi supplies the SDK/TypeBox peers, and npm honors overrides only at the installing
-project's root. Audit and patch the actual host dependency tree; keep Node's
+The development Undici and minimatch overrides are not security updates for a
+consuming Pi host. Pi supplies the SDK/TypeBox peers, and npm honors overrides only at the installing
+project's root. Overrides do not rewrite Pi's prebuilt CLI/RPC bundles or standalone
+binaries; those need a reviewed patched release or rebuild. Audit and patch the
+actual host dependency tree and embedded code; keep Node's
 built-in HTTP implementation current independently. See
-[host dependency security](README.md#host-dependency-security) for the SDK 1.0.0
-root-override example and globally installed host limitations.
+[host dependency security](README.md#host-dependency-security) for the unbundled SDK 1.4.0
+root-override example and bundled host limitations.
 
 ## Reporting
 

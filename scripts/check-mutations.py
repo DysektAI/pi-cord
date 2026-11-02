@@ -27,6 +27,8 @@ MUTATIONS = [
     ("encoded-route mention protection", "src/index.ts", 'decodeURIComponent(new URL(url).pathname)', 'new URL(url).pathname', "encoded native message paths"),
     ("encoded URL preservation", "src/index.ts", '{ method, path, body }, operationSignal', '{ method, path: decodeURIComponent(path), body }, operationSignal', "encoded native message paths"),
     ("SDK security override", "package.json", '"undici": "8.12.2"', '"undici": "8.10.2"', "SDK dependency override keeps"),
+    ("SDK minimatch override", "package.json", '"minimatch": "11.0.1"', '"minimatch": "10.2.6"', "SDK minimatch override keeps"),
+    ("SDK matcher override", "package.json", '"@isaacs/nonrecursive-glob-match": "1.0.1"', '"@isaacs/nonrecursive-glob-match": "1.0.0"', "SDK minimatch override keeps"),
 ]
 
 with tempfile.TemporaryDirectory(prefix="pi-cord-mutations-") as temp:
