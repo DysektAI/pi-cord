@@ -11,8 +11,8 @@ const sdkModule = (name: string) => pathToFileURL(sdkRequire.resolve(`./dist/cor
 
 test("SDK minimatch override keeps the patched matcher in the lock and installed graph", () => {
   const manifest = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
-  assert.equal(manifest.overrides?.["@earendil-works/pi-coding-agent@1.5.0"]?.minimatch, "11.0.1");
-  assert.equal(manifest.overrides?.["@earendil-works/pi-coding-agent@1.5.0"]?.["@isaacs/nonrecursive-glob-match"], "1.0.1");
+  assert.equal(manifest.overrides?.["@earendil-works/pi-coding-agent@1.5.2"]?.minimatch, "11.0.1");
+  assert.equal(manifest.overrides?.["@earendil-works/pi-coding-agent@1.5.2"]?.["@isaacs/nonrecursive-glob-match"], "1.0.1");
   const lock = JSON.parse(readFileSync(new URL("../package-lock.json", import.meta.url), "utf8"));
   const resolutions = Object.entries(lock.packages as Record<string, { version?: string }>).filter(([name]) => name === "node_modules/minimatch" || name.endsWith("/node_modules/minimatch"));
   assert.ok(resolutions.length > 0, "The SDK must resolve a patched minimatch dependency");
