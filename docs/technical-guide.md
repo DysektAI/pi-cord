@@ -10,7 +10,7 @@ The existing `discord` tool name, multi-bot selection, environment variables, an
 
 ## Install
 
-Requires Node 22.19+ and Pi. Install the Git package:
+Requires Node 22.19+, Git, and Pi. Install the Git package:
 
 ```sh
 pi install git:github.com/DysektAI/pi-cord
@@ -160,7 +160,8 @@ messages are untrusted source material, not instructions to execute.
 - Requests stay on the Discord v10 API; traversal, arbitrary URLs, and redirects
   are rejected. Valid percent-encoded paths receive the same message mention
   defaults; the approved path and outgoing URL remain encoded and unchanged.
-  Configured credentials are redacted from response/error text.
+  Exact matches of the selected token are redacted from response bodies and
+  request error text.
 
 Scheduling is local to one Pi extension runtime. Other Pi processes or programs
 using the same token do not share its queue. Pacing is not an anti-abuse system,

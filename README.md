@@ -24,7 +24,7 @@ grant access to private channels or server features your bot cannot use.
 
 ## Get started
 
-You need **Node.js 22.19 or later**, **Pi**, and permission to add a bot to your
+You need **Node.js 22.19 or later**, **Git**, **Pi**, and permission to add a bot to your
 Discord server. A bot is a Discord account created for tools and integrations.
 
 ### 1. Install Pi-Cord
@@ -42,9 +42,11 @@ If you used the Discord extension from `pi-extensions`, follow the
 
 1. Open the [Discord Developer Portal](https://discord.com/developers/applications) and create an application.
 2. Open its **Bot** settings and create or retrieve the bot token. Treat this token like a password.
-3. Use the application's installation settings to invite the bot to your server.
-4. Give it **View Channel** and **Read Message History** in the channels you want it to read.
-   Add **Send Messages** if you want to send replies.
+3. In **Installation**, enable **Guild Install** (installation to a server). Choose **Discord Provided Link** under **Install Link**. Under its
+   default install settings, add the **bot** scope and choose **View Channel** and
+   **Read Message History**. Add **Send Messages** if you want to send replies.
+4. Save the settings, then use the application's install link to add the bot to your server.
+   Check that its role has those permissions in the channels you want to use.
 
 Reading ordinary server message content may also require enabling **Message Content Intent**
 in the portal's Bot settings. Grant only the permissions you need.
@@ -107,7 +109,8 @@ suppress automatic mentions by default. Other message-producing routes may behav
 differently; review their mention settings before approving them.
 
 Pi-Cord also limits request duration and response size, handles rate limits,
-supports cancellation, and redacts configured credentials from response and error text.
+supports cancellation, and redacts exact matches of the selected token from
+response bodies and request error text.
 See the [request safeguards](docs/technical-guide.md#request-safeguards) for limits and exceptions.
 
 ## Common questions
