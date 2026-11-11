@@ -24,7 +24,7 @@ Discord forbids normal-user-account automation outside its OAuth2/bot APIs, incl
 read-only and human-directed token requests. Unsupported user-token mode is retained
 for compatibility, not endorsed as compliant. It can result in account termination.
 Neither rate limiting, human approval, nor a disclaimer changes Discord's policy.
-See the [usage notice](README.md#unsupported-user-token-mode-and-acceptable-use).
+See the [usage notice](docs/technical-guide.md#unsupported-user-token-mode-and-acceptable-use).
 
 ## Transport limitations
 
@@ -45,7 +45,7 @@ project's root. Overrides do not rewrite Pi's prebuilt CLI/RPC bundles or standa
 binaries; those need a reviewed patched release or rebuild. Audit and patch the
 actual host dependency tree and embedded code; keep Node's
 built-in HTTP implementation current independently. See
-[host dependency security](README.md#host-dependency-security) for the unbundled SDK 1.4.0
+[host dependency security](docs/technical-guide.md#host-dependency-security) for the unbundled SDK 1.5.2
 root-override example and bundled host limitations.
 
 ## Reporting

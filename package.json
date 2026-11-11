@@ -10,7 +10,7 @@
   "homepage": "https://github.com/DysektAI/pi-cord#readme",
   "engines": {"node": ">=22.19.0"},
   "pi": {"extensions": ["./src/index.ts"]},
-  "files": ["src/", "README.md", "SECURITY.md", "NOTICE", "LICENSE"],
+  "files": ["src/", "docs/", "README.md", "SECURITY.md", "NOTICE", "LICENSE"],
   "peerDependencies": {"@earendil-works/pi-coding-agent": "*", "typebox": "*"},
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "1.5.2",
