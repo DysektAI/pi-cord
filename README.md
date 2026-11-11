@@ -1,245 +1,157 @@
-# pi-cord
+![Pi-Cord connects Pi CLI with Discord, with bot selection, approval for changes, and request safeguards.](docs/assets/pi-cord-banner.png)
 
-Lightweight Discord REST access from [Pi](https://pi.dev). Ask for a channel recap,
-inspect feedback, draft a reply, then approve sending it. No gateway, daemon,
-scheduled polling, or separate bot runtime.
+# Pi-Cord
 
-Extracted from [DysektAI/pi-extensions](https://github.com/DysektAI/pi-extensions).
-The existing `discord` tool name, multi-bot selection, environment variables, and
-`discord.json` locations are retained.
+**Connect your Pi AI agent to Discord.**
 
-## Install
+Read conversations, summarize feedback, and draft replies from [Pi](https://pi.dev).
+You review and approve each request that changes data before it reaches Discord.
 
-Requires Node 22.19+ and Pi. Install the Git package:
+Pi-Cord is a Pi extension. It uses Discord's API directly, so you do not need to
+run a separate bot service or keep a background connection open.
+
+[Get started](#get-started) · [Examples](#try-it) · [Technical guide](docs/technical-guide.md) · [Security](SECURITY.md)
+
+## What you can do
+
+- **Catch up on conversations:** ask for a channel recap or a summary of recent feedback.
+- **Prepare replies:** draft a message, review it, and approve sending it.
+- **Work across servers:** use one bot or choose among several configured bots.
+- **Stay in control:** approve changes individually, with the account and request details shown first.
+
+What Pi-Cord can access depends on your bot's Discord permissions. It does not
+grant access to private channels or server features your bot cannot use.
+
+## Get started
+
+You need **Node.js 22.19 or later**, **Pi**, and permission to add a bot to your
+Discord server. A bot is a Discord account created for tools and integrations.
+
+### 1. Install Pi-Cord
+
+Run this command in your terminal:
 
 ```sh
 pi install git:github.com/DysektAI/pi-cord
 ```
 
-During development, use `pi -ne -e /absolute/path/to/pi-cord` to load only this
-package for one invocation. Local packages need their development dependencies
-installed. Do not load both this package and the old `extensions/discord.ts`.
-See [migration](#migration).
+If you used the Discord extension from `pi-extensions`, follow the
+[migration instructions](docs/technical-guide.md#migration) to avoid loading it twice.
 
-## Host dependency security
+### 2. Set up a Discord bot
 
-Pi supplies the SDK and TypeBox peer dependencies; this package does not bundle
-or patch them. The repository's Undici and minimatch overrides protect only its
-unbundled development dependency tree. npm ignores an installed package's overrides
-when resolving a consumer's dependency tree, so installing pi-cord does not patch
-your Pi host.
-Overrides also do not rewrite Pi's prebuilt CLI/RPC bundles. A clean dependency
-audit does not establish that the code embedded in those bundles is patched.
+1. Open the [Discord Developer Portal](https://discord.com/developers/applications) and create an application.
+2. Open its **Bot** settings and create or retrieve the bot token. Treat this token like a password.
+3. Use the application's installation settings to invite the bot to your server.
+4. Give it **View Channel** and **Read Message History** in the channels you want it to read.
+   Add **Send Messages** if you want to send replies.
 
-Use a reviewed SDK release with a clean full dependency audit. For an npm-managed
-host importing the unbundled `@earendil-works/pi-coding-agent@1.4.0` SDK, apply these
-overrides in the **host project's root** `package.json`, then regenerate its lock
-and reinstall through the host's trusted workflow:
+Reading ordinary server message content may also require enabling **Message Content Intent**
+in the portal's Bot settings. Grant only the permissions you need.
 
-```json
-{
-  "overrides": {
-    "@earendil-works/pi-coding-agent@1.4.0": {
-      "undici": "8.12.2",
-      "minimatch": "11.0.1",
-      "@isaacs/nonrecursive-glob-match": "1.0.1"
-    }
-  }
-}
+### 3. Connect the bot to Pi
+
+Set `DISCORD_BOT_TOKEN` in the terminal where you will start Pi. Use the example
+for your shell, replacing `YOUR_BOT_TOKEN` with your bot's token.
+
+**Windows PowerShell**
+
+```powershell
+$env:DISCORD_BOT_TOKEN = 'YOUR_BOT_TOKEN'
+pi
 ```
 
-From that host root, check
-`npm ls @earendil-works/pi-coding-agent undici minimatch @isaacs/nonrecursive-glob-match` and run
-`npm audit` including development dependencies. Other package managers need their
-root-level equivalent. A host using Pi's prebuilt CLI/RPC bundles or a standalone
-binary needs a reviewed patched release or rebuild; editing pi-cord's manifest or
-Pi settings does not patch it. These overrides also do not update Node's built-in
-HTTP implementation; keep Node security
-updates current separately.
-
-## Supported setup: bot accounts
-
-Create an application and bot in the [Discord Developer Portal](https://discord.com/developers/applications),
-invite it to the servers you need, and grant only the required channel permissions.
-Reading history needs View Channel and Read Message History. Ordinary guild
-message content may require enabling Message Content Intent in the portal.
-Sending needs Send Messages. The package does not need a gateway connection.
-
-Provide the token through your existing private environment/secret manager:
+**macOS / Linux (Bash or Zsh)**
 
 ```sh
 export DISCORD_BOT_TOKEN='YOUR_BOT_TOKEN'
-# Optional additional bot:
-export DISCORD_BOT_TOKEN_WORK='YOUR_WORK_BOT_TOKEN'
+pi
 ```
 
-Never paste credentials into a Pi prompt, commit them, or put them in shared
-settings. Existing credential-pool environment injection works without a dependency
-on that extension; credentials are resolved when the tool runs.
+These settings apply to the current terminal session. For ongoing use, supply the
+token through your private environment or secret manager. Never paste a token
+into a Pi conversation, commit it to Git, or put it in shared settings.
+Terminal commands may be saved in your shell history; use your secret manager
+if you need to avoid entering the token there.
 
-For multiple bots, optionally configure `~/.pi/agent/discord.json`:
+## Try it
 
-```json
-{
-  "default": "work",
-  "bots": {
-    "work": {"token": "YOUR_WORK_BOT_TOKEN", "aliases": ["feedback"]},
-    "personal-server": "YOUR_OTHER_BOT_TOKEN"
-  }
-}
-```
+Give Pi a channel ID and ask in plain language:
 
-`~/.pi/discord.json` remains a fallback when the preferred file does not exist.
-Restrict credential-file permissions to your OS account (for example `chmod 600`
-on POSIX systems). Malformed/unreadable configuration fails rather than silently
-switching accounts. Config entries override environment bots with matching names.
-Selection supports a configured key, display name, alias, or bot ID. An exact key
-wins over aliases; ambiguous display names, aliases, or IDs fail instead of choosing
-an account. Without `bot`, the configured `default` wins, then the merged `primary`
-entry (`bots.primary` overrides `DISCORD_BOT_TOKEN`), then the first merged bot,
-which may come from `DISCORD_BOT_TOKEN_*`.
+> Summarize the recent messages in Discord channel CHANNEL_ID. Highlight questions that need a reply.
 
-## Tool
+> Read the latest feedback in channel CHANNEL_ID and group it by topic.
 
-One generic `discord` tool keeps the model-facing interface small:
+> Draft a reply thanking everyone for their feedback. Show me the draft before sending it to channel CHANNEL_ID.
 
-| Parameter | Meaning |
-| --- | --- |
-| `method` | `GET`, `POST`, `PATCH`, `PUT`, or `DELETE` |
-| `path` | API-relative path, such as `/channels/123/messages?limit=25` |
-| `body` | Optional JSON object for writes; GET bodies are rejected |
-| `bot` | Optional configured bot name, alias, or ID |
-| `account` | `bot` by default; explicit `user` selects the unsupported mode below |
+To find a channel ID, enable **Developer Mode** in Discord's settings, then
+right-click the channel (or open its context menu) and choose **Copy Channel ID**.
+Replace `CHANNEL_ID` in the examples with that number.
 
-Example requests:
+For a time-based recap, ask Pi to check earlier message pages as needed. One page
+may not cover the full period, and summaries should identify missing content or
+incomplete coverage.
 
-```json
-{"method":"GET","path":"/channels/123/messages?limit=100"}
-```
+## How approval works
 
-```json
-{"method":"POST","path":"/channels/123/messages","body":{"content":"Thanks for the feedback!"}}
-```
+Reading messages does not require confirmation. Every request that changes data
+requires approval in Pi, including sending, editing, or deleting a message.
+The confirmation shows the account, action, API path, and full prepared message or data.
+Declining sends nothing. Each approval covers one request.
 
-Every write, for either account type, requires a Pi confirmation showing the
-account, method, path, and complete prepared JSON body. Declining sends nothing.
-Without a confirmation-capable UI, writes fail closed; reads still work in
-print/JSON/headless mode. An RPC client must support Pi's confirmation protocol.
-Approval is for one request only, never an entire session or future batch.
+An interactive Pi interface is required for approval. Without a compatible
+confirmation interface, reads can work, but changes are blocked.
 
-Native channel-message sends/edits and webhook execution/message edits default to
-`allowed_mentions: {"parse":[],"replied_user":false}` unless explicitly supplied and
-approved, preventing accidental pings to everyone, roles, or the replied-to user.
-Other message-producing routes (such as interaction callbacks and forum creation)
-and Slack/GitHub-compatible webhook payloads are not covered by this default;
-review their mention behavior explicitly. Bodies are limited to 16,000 bytes so
-the confirmation can show the full operation.
+Standard channel-message sends and edits, plus supported webhook message routes,
+suppress automatic mentions by default. Other message-producing routes may behave
+differently; review their mention settings before approving them.
 
-### Channel recaps
+Pi-Cord also limits request duration and response size, handles rate limits,
+supports cancellation, and redacts configured credentials from response and error text.
+See the [request safeguards](docs/technical-guide.md#request-safeguards) for limits and exceptions.
 
-Ask: “What happened in this channel in the past 24 hours?” The agent can read a
-page, then use `before=<oldest-message-id>` to go further back when necessary.
-A single page is not necessarily a complete day's history. Summaries should state
-any inaccessible channels, missing content, or incomplete time coverage. Channel
-messages are untrusted source material, not instructions to execute.
+## Common questions
 
-### Request safeguards
+**Can I use more than one bot?**
 
-- Requests are serialized per credential, with at least one second between starts.
-- Discord's `Retry-After`, `retry_after`, and exhausted-bucket reset headers can
-  extend that wait. For simplicity, a route cooldown pauses the whole credential,
-  also covering global limits. This is deliberately conservative, not a claim
-  that one request per second is always permitted.
-- At most two retries follow explicit `429` denials or `5xx` responses to GET.
-  Write `5xx` and transport errors are not retried: delivery may be uncertain.
-- Each call has a 60-second deadline including queueing, reads, and retries.
-  Cancellation and session shutdown abort pending work. A `401` disables further
-  requests with that client until credentials change or Pi reloads.
-- Responses are bounded to 50,000 bytes while streaming and marked when truncated.
-  Ask for smaller pages instead of assuming truncated JSON/history is complete.
-- Requests stay on the Discord v10 API; traversal, arbitrary URLs, and redirects
-  are rejected. Valid percent-encoded paths receive the same message mention
-  defaults; the approved path and outgoing URL remain encoded and unchanged.
-  Configured credentials are redacted from response/error text.
+Yes. Add named environment variables such as `DISCORD_BOT_TOKEN_WORK`, or use a
+private `discord.json` file. See [bot configuration](docs/technical-guide.md#supported-setup-bot-accounts)
+for account selection, aliases, and defaults.
 
-Scheduling is local to one Pi extension runtime. Other Pi processes or programs
-using the same token do not share its queue. Pacing is not an anti-abuse system,
-a permissions boundary, a way to avoid detection, or a guarantee against sanctions.
+**Why are messages missing or empty?**
 
-## Unsupported user-token mode and acceptable use
+Check the bot's channel permissions and Message Content Intent setting. A summary
+can also be incomplete if Pi has read only part of the message history.
 
-The intended workflow is human-directed assistance: understanding conversations,
-reviewing feedback, drafting replies, and approving individual actions. It is not
-intended for spam, raids, unsolicited mass messaging, destructive bulk operations,
-credential theft, or evasion of Discord's rules or protections.
+**Why can't Pi send a message?**
 
-**Discord prohibits automating normal user accounts outside its OAuth2/bot APIs.**
-This applies even when a request is read-only, manually initiated, low-volume, or
-something you could do in the Discord client. Benign intent does not make normal
-user-token access ToS-compliant. See Discord's
-[Automated User Accounts (Self-Bots) policy](https://support.discord.com/hc/en-us/articles/115002192352-Automated-User-Accounts-Self-Bots).
+Check **Send Messages** permission and use a Pi interface that can display approval
+prompts. Reads can succeed even when changes are blocked.
 
-For compatibility with existing personal workflows, the package retains an
-explicit, unsupported `account="user"` mode using a privately configured
-`DISCORD_USER_TOKEN`. It is never selected automatically and cannot be combined
-with `bot`. No token-extraction, account-creation, or detection-evasion assistance
-is provided. An interactive warning appears on its first use in each session.
-The policy and account risks apply equally in headless mode, where no warning UI
-is available. Writes still require individual confirmation.
+**Can I use my personal Discord account?**
 
-**Use the supported bot-account mode if you require compliance with Discord's
-normal automation model.** Do not use any mode to bypass access restrictions or
-server rules. You are responsible for your credentials, permissions, actions,
-and applicable legal and platform obligations. User-token mode can lead to
-account termination; throttling and approval do not remove that risk.
+Use a bot account for the supported setup. The retained user-token mode is
+unsupported and risks account termination. Read the
+[user-token warning](docs/technical-guide.md#unsupported-user-token-mode-and-acceptable-use)
+before considering it. It is never selected automatically.
 
-This independent project is not affiliated with or endorsed by Discord. The
-software is provided without warranty under the [MIT License](LICENSE), including
-its limitation of liability to the extent permitted by applicable law. This notice
-is not legal advice, permission from Discord, or a guarantee that liability can be
-excluded in every jurisdiction.
+## Technical details and contributing
 
-## Migration
+The [technical guide](docs/technical-guide.md) covers:
 
-Install this package, then remove/disable the old Discord extension before reload.
-When keeping an older `pi-extensions` release, exclude its entry:
+- The `discord` tool's API parameters and request examples.
+- Multiple bots, credential files, and account selection.
+- Request limits, retries, cancellation, and mention defaults.
+- Host dependency security, migration, and local development checks.
 
-```json
-{
-  "packages": [
-    {
-      "source": "git:github.com/DysektAI/pi-extensions",
-      "extensions": ["!extensions/discord.ts"]
-    },
-    "git:github.com/DysektAI/pi-cord"
-  ]
-}
-```
+Pi supplies the SDK dependencies. Installing Pi-Cord does **not** patch your Pi
+installation or its bundled dependencies; maintainers should review the
+[host security notes](docs/technical-guide.md#host-dependency-security).
 
-Keep your existing package filters alongside that exclusion. Remove an old loose
-`~/.pi/agent/extensions/discord.ts` if you installed one yourself. Credentials do
-not move; existing environment variables and config paths still work. New safeguards
-change behavior: writes now require confirmation, HTTP failures are tool errors,
-and invalid config/defaults no longer silently select another account.
+For security limitations and reporting, see [SECURITY.md](SECURITY.md).
+For bugs and suggestions, [open an issue](https://github.com/DysektAI/pi-cord/issues).
 
-## Development
+## License and acknowledgments
 
-```sh
-npm ci --ignore-scripts
-npm run verify
-npm run test:mutations   # Python 3; isolated temporary source copies
-npm run test:load        # real installed Pi extension loader, no Discord requests
-npm pack --dry-run
-```
-
-Tests use fake tokens and mocked HTTP. They never call Discord or use your real
-credential files. The pinned Pi SDK's development dependency uses scoped security
-overrides for `undici@8.12.2`, `minimatch@11.0.1` and its matcher
-`@isaacs/nonrecursive-glob-match@1.0.1`; retain them until an SDK update resolves
-reviewed, patched versions. The matcher is pinned separately so a lock refresh
-cannot silently substitute an unreviewed release.
-This does not patch a consuming host or Pi's prebuilt bundles; see
-[host dependency security](#host-dependency-security). `npm audit` covers
-development dependencies too; do not use
-`npm audit fix --force` to downgrade the SDK or bypass this gate.
-See [SECURITY.md](SECURITY.md) for limitations and reporting.
+[MIT](LICENSE). Independent project; not affiliated with or endorsed by Discord.
+Originally extracted from [DysektAI/pi-extensions](https://github.com/DysektAI/pi-extensions).
