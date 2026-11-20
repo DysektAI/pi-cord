@@ -13,13 +13,13 @@
   "files": ["src/", "docs/", "README.md", "SECURITY.md", "NOTICE", "LICENSE"],
   "peerDependencies": {"@earendil-works/pi-coding-agent": "*", "typebox": "*"},
   "devDependencies": {
-    "@earendil-works/pi-coding-agent": "1.5.2",
+    "@earendil-works/pi-coding-agent": "1.6.0",
     "@types/node": "26.6.6",
     "typebox": "1.4.4",
     "typescript": "7.0.2"
   },
   "overrides": {
-    "@earendil-works/pi-coding-agent@1.5.2": { "undici": "8.12.3", "minimatch": "11.0.1", "@isaacs/nonrecursive-glob-match": "1.0.1" }
+    "@earendil-works/pi-coding-agent@1.6.0": { "undici": "8.12.4", "minimatch": "11.0.8", "@isaacs/nonrecursive-glob-match": "1.1.0" }
   },
   "scripts": {
     "test": "node --experimental-strip-types --test test/*.test.ts",
