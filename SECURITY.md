@@ -45,7 +45,7 @@ project's root. Overrides do not rewrite Pi's prebuilt CLI/RPC bundles or standa
 binaries; those need a reviewed patched release or rebuild. Audit and patch the
 actual host dependency tree and embedded code; keep Node's
 built-in HTTP implementation current independently. See
-[host dependency security](docs/technical-guide.md#host-dependency-security) for the unbundled SDK 1.5.2
+[host dependency security](docs/technical-guide.md#host-dependency-security) for the unbundled SDK 1.6.0
 root-override example and bundled host limitations.
 
 ## Reporting

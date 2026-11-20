@@ -32,16 +32,16 @@ Overrides also do not rewrite Pi's prebuilt CLI/RPC bundles. A clean dependency
 audit does not establish that the code embedded in those bundles is patched.
 
 Use a reviewed SDK release with a clean full dependency audit. For an npm-managed
-host importing the unbundled `@earendil-works/pi-coding-agent@1.5.2` SDK, apply these
+host importing the unbundled `@earendil-works/pi-coding-agent@1.6.0` SDK, apply these
 overrides in the **host project's root** `package.json`, then regenerate its lock
 and reinstall through the host's trusted workflow:
 
 ```json
 {
   "overrides": {
-    "@earendil-works/pi-coding-agent@1.5.2": {
-      "undici": "8.12.3",
-      "minimatch": "11.0.1",
+    "@earendil-works/pi-coding-agent@1.6.0": {
+      "undici": "8.12.4",
+      "minimatch": "11.0.3",
       "@isaacs/nonrecursive-glob-match": "1.0.1"
     }
   }
@@ -235,7 +235,7 @@ npm pack --dry-run
 
 Tests use fake tokens and mocked HTTP. They never call Discord or use your real
 credential files. The pinned Pi SDK's development dependency uses scoped security
-overrides for `undici@8.12.3`, `minimatch@11.0.1` and its matcher
+overrides for `undici@8.12.4`, `minimatch@11.0.3` and its matcher
 `@isaacs/nonrecursive-glob-match@1.0.1`; retain them until an SDK update resolves
 reviewed, patched versions. The matcher is pinned separately so a lock refresh
 cannot silently substitute an unreviewed release.
