@@ -41,8 +41,8 @@ and reinstall through the host's trusted workflow:
   "overrides": {
     "@earendil-works/pi-coding-agent@1.6.0": {
       "undici": "8.12.4",
-      "minimatch": "11.0.3",
-      "@isaacs/nonrecursive-glob-match": "1.0.1"
+      "minimatch": "11.0.8",
+      "@isaacs/nonrecursive-glob-match": "1.1.0"
     }
   }
 }
@@ -235,8 +235,8 @@ npm pack --dry-run
 
 Tests use fake tokens and mocked HTTP. They never call Discord or use your real
 credential files. The pinned Pi SDK's development dependency uses scoped security
-overrides for `undici@8.12.4`, `minimatch@11.0.3` and its matcher
-`@isaacs/nonrecursive-glob-match@1.0.1`; retain them until an SDK update resolves
+overrides for `undici@8.12.4`, `minimatch@11.0.8` and its matcher
+`@isaacs/nonrecursive-glob-match@1.1.0`; retain them until an SDK update resolves
 reviewed, patched versions. The matcher is pinned separately so a lock refresh
 cannot silently substitute an unreviewed release.
 This does not patch a consuming host or Pi's prebuilt bundles; see
